@@ -6,7 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import com.dev.springdata.repositories.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -53,15 +58,50 @@ class SpringdataApplicationTests {
         List<Product> products = repository.findByNameAndDesc("Nokia", "Tijolao");
         products.forEach(product -> System.out.print(product.getPrice() + "\n"));
     }
+
     @Test
     void findByPrice_properly() {
         List<Product> products = repository.findByPriceGreaterThan(2000.00);
         products.forEach(product -> System.out.print(product.getPrice() + "\n"));
     }
-	@Test
+
+    @Test
     void findByIds_properly() {
-        List<Product> products = repository.findByIdIn(Arrays.asList(1,2,3));
+        List<Product> products = repository.findByIdIn(Arrays.asList(1, 2, 3));
         products.forEach(product -> System.out.print(product.getName() + "\n"));
+    }
+
+    @Test
+    void pageable_properly() {
+        Pageable pageable = PageRequest.of(0, 2);
+        Page<Product> products = repository.findAll(pageable);
+        products.forEach(product -> System.out.print(product.getName() + "\n"));
+    }
+
+    @Test
+    void pageableCustom_properly() {
+        Pageable pageable = PageRequest.of(2, 2);
+        var products = repository.findByIdIn(Arrays.asList(1,2,3,4) , pageable);
+        products.forEach(product -> System.out.print(product.getName() + "\n"));
+    }
+
+    @Test
+    void sort_properly() {
+        var orders = new ArrayList<Sort.Order>();
+        Sort.Order nameOrder = new Sort.Order(Sort.Direction.DESC, "name");
+        Sort.Order priceOrder = new Sort.Order(Sort.Direction.DESC, "price");
+        orders.add(nameOrder);
+        orders.add(priceOrder);
+
+        repository.findAll(Sort.by(orders))
+                .forEach((product -> System.out.print(product.getName() + " " + product.getPrice() + "\n")));
+    }
+
+    @Test
+    void pageableWithSort_properly() {
+        Pageable pageable = PageRequest.of(0, 2, Sort.Direction.DESC, "name");
+        repository.findAll(pageable)
+                .forEach((product -> System.out.print(product.getName() + " " + product.getPrice() + "\n")));
     }
 
     @Test
