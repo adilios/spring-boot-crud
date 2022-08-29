@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,13 +72,13 @@ class SpringdataApplicationTests {
         List<Product> products = repository.findByIdIn(Arrays.asList(1, 2, 3));
         products.forEach(product -> System.out.print(product.getName() + "\n"));
     }
-
-    @Test
-    void pageable_properly() {
-        Pageable pageable = PageRequest.of(0, 2);
-        Page<Product> products = repository.findAll(pageable);
-        products.forEach(product -> System.out.print(product.getName() + "\n"));
-    }
+//
+//    @Test
+//    void pageable_properly() {
+//        Pageable pageable = PageRequest.of(0, 2);
+//        Page<Product> products = repository.findAll(pageable);
+//        products.forEach(product -> System.out.print(product.getName() + "\n"));
+//    }
 
     @Test
     void pageableCustom_properly() {
@@ -84,25 +86,46 @@ class SpringdataApplicationTests {
         var products = repository.findByIdIn(Arrays.asList(1,2,3,4) , pageable);
         products.forEach(product -> System.out.print(product.getName() + "\n"));
     }
-
     @Test
-    void sort_properly() {
-        var orders = new ArrayList<Sort.Order>();
-        Sort.Order nameOrder = new Sort.Order(Sort.Direction.DESC, "name");
-        Sort.Order priceOrder = new Sort.Order(Sort.Direction.DESC, "price");
-        orders.add(nameOrder);
-        orders.add(priceOrder);
-
-        repository.findAll(Sort.by(orders))
-                .forEach((product -> System.out.print(product.getName() + " " + product.getPrice() + "\n")));
+    void findAllUsingJPQL_properly() {
+        repository.findALlProductsPartialData().forEach(p -> System.out.println(p[0] + " "));
+    }
+    @Test
+    void findALlByFirstName_properly() {
+        repository.findALlProductsByName("Nokia").forEach(p -> System.out.println(p));
     }
 
     @Test
-    void pageableWithSort_properly() {
-        Pageable pageable = PageRequest.of(0, 2, Sort.Direction.DESC, "name");
-        repository.findAll(pageable)
-                .forEach((product -> System.out.print(product.getName() + " " + product.getPrice() + "\n")));
+    void findALlByPrice_properly() {
+        repository.findALlProductsByPrice(2000.00).forEach(p -> System.out.println(p));
     }
+
+    @Test
+    @Transactional
+    @Rollback(false)
+    void deleteProductByName_properly() {
+        repository.deleteProductByName("Nokia");
+    }
+
+
+//    @Test
+//    void sort_properly() {
+//        var orders = new ArrayList<Sort.Order>();
+//        Sort.Order nameOrder = new Sort.Order(Sort.Direction.DESC, "name");
+//        Sort.Order priceOrder = new Sort.Order(Sort.Direction.DESC, "price");
+//        orders.add(nameOrder);
+//        orders.add(priceOrder);
+//
+//        repository.findAll(Sort.by(orders))
+//                .forEach((product -> System.out.print(product.getName() + " " + product.getPrice() + "\n")));
+//    }
+//
+//    @Test
+//    void pageableWithSort_properly() {
+//        Pageable pageable = PageRequest.of(0, 2, Sort.Direction.DESC, "name");
+//        repository.findAll(pageable)
+//                .forEach((product -> System.out.print(product.getName() + " " + product.getPrice() + "\n")));
+//    }
 
     @Test
     void updateProductOnDB_properly() {
